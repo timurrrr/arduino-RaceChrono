@@ -102,3 +102,18 @@ bool RaceChronoBleAgent::waitForConnection(uint32_t timeoutMs) {
 bool RaceChronoBleAgent::isConnected() {
   return Bluefruit.connected();
 }
+
+void RaceChronoBleAgent::sendCanData(
+    uint32_t pid, const uint8_t *data, uint8_t len) {
+  if (len > 8) {
+    len = 8;
+  }
+
+  unsigned char buffer[20];
+  buffer[0] = pid & 0xFF;
+  buffer[1] = (pid >> 8) & 0xFF;
+  buffer[2] = (pid >> 16) & 0xFF;
+  buffer[3] = (pid >> 24) & 0xFF;
+  memcpy(buffer + 4, data, len);
+  _canBusDataCharacteristic.notify(buffer, 4 + len);
+}

@@ -1,25 +1,10 @@
 #include <RaceChrono.h>
 
-class PrintRaceChronoCommands : public RaceChronoBleCanHandler {
-  void allowAllPids(uint16_t updateIntervalMs) {
-    Serial.print("ALLOW ALL PIDS, update interval: ");
-    Serial.print(updateIntervalMs);
-    Serial.println(" ms");
-  }
-
-  void denyAllPids() {
-    Serial.println("DENY ALL PIDS");
-  }
-
-  void allowPid(uint32_t pid, uint16_t updateIntervalMs) {
-    Serial.print("ALLOW PID ");
-    Serial.print(pid);
-    Serial.print(" (0x");
-    Serial.print(pid, HEX);
-    Serial.print("), update interval: ");
-    Serial.print(updateIntervalMs);
-    Serial.println(" ms");
-  }
+// We're ignoring the requested PIDs and notify intervals here for simplicity.
+class IgnoreRaceChronoCommands : public RaceChronoBleCanHandler {
+  void allowAllPids(uint16_t updateIntervalMs) {}
+  void denyAllPids() {}
+  void allowPid(uint32_t pid, uint16_t updateIntervalMs) {}
 } raceChronoHandler;
 
 // Forward declaration to help put code in a natural reading order.
@@ -63,5 +48,12 @@ void loop() {
   if (!RaceChronoBle.isConnected()) {
     Serial.println("RaceChrono disconnected! Waiting for a new connection.");
     waitForConnection();
+  }
+
+  for (uint16_t pid = 0; pid < 256; pid++) {
+    // For this simple demo, just sent PID repeated 8 times as data.
+    uint8_t data[8] = { pid, pid, pid, pid, pid, pid, pid, pid };
+    uint8_t len = 8;
+    RaceChronoBle.sendCanData(pid, data, len);
   }
 }

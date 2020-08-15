@@ -26,6 +26,8 @@ public:
 
   bool isConnected();
 
+  void sendCanData(uint32_t pid, const uint8_t *data, uint8_t len);
+
 private:
   // The protocol implemented in this file is based on
   // https://github.com/aollin/racechrono-ble-diy-device
