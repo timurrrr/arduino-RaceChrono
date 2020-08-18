@@ -3,6 +3,8 @@
 
 #include <bluefruit.h>
 
+#include "RaceChronoPidMap.h"
+
 class RaceChronoBleCanHandler {
 public:
   virtual ~RaceChronoBleCanHandler() {}
@@ -24,7 +26,7 @@ public:
   // Returns true on success, false on failure.
   bool waitForConnection(uint32_t timeoutMs);
 
-  bool isConnected();
+  bool isConnected() const;
 
   void sendCanData(uint32_t pid, const uint8_t *data, uint8_t len);
 
@@ -46,4 +48,4 @@ private:
 
 extern RaceChronoBleAgent RaceChronoBle;
 
-#endif
+#endif  // __RACECHRONO_H

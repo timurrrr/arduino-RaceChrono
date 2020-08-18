@@ -1,6 +1,7 @@
 #include <RaceChrono.h>
 
 class PrintRaceChronoCommands : public RaceChronoBleCanHandler {
+public:
   void allowAllPids(uint16_t updateIntervalMs) {
     Serial.print("ALLOW ALL PIDS, update interval: ");
     Serial.print(updateIntervalMs);
@@ -41,18 +42,18 @@ void setup() {
 
 void waitForConnection() {
   uint32_t iteration = 0;
-  bool lastLineHadNewline = false;
+  bool lastPrintHadNewline = false;
   while (!RaceChronoBle.waitForConnection(1000)) {
     Serial.print(".");
     if ((++iteration) % 10 == 0) {
-      lastLineHadNewline = true;
+      lastPrintHadNewline = true;
       Serial.println();
     } else {
-      lastLineHadNewline = false;
+      lastPrintHadNewline = false;
     }
   }
 
-  if (!lastLineHadNewline) {
+  if (!lastPrintHadNewline) {
     Serial.println();
   }
 

@@ -1,4 +1,4 @@
-#include <RaceChrono.h>
+#include "RaceChrono.h"
 
 namespace {
 
@@ -14,8 +14,8 @@ void handle_racechrono_filter_request(
   switch (data[0]) {
     case 1:  // Allow all CAN PIDs.
       if (len == 3) {
-        uint16_t notifyIntervalMs = data[1] << 8 | data[2];
-        handler->allowAllPids(notifyIntervalMs);
+        uint16_t updateIntervalMs = data[1] << 8 | data[2];
+        handler->allowAllPids(updateIntervalMs);
         return;
       }
       break;
@@ -29,9 +29,9 @@ void handle_racechrono_filter_request(
 
     case 2:  // Allow one more CAN PID.
       if (len == 7) {
-        uint16_t notifyIntervalMs = data[1] << 8 | data[2];
+        uint16_t updateIntervalMs = data[1] << 8 | data[2];
         uint32_t pid = data[3] << 24 | data[4] << 16 | data[5] << 8 | data[6];
-        handler->allowPid(pid, notifyIntervalMs);
+        handler->allowPid(pid, updateIntervalMs);
         return;
       }
       break;
@@ -99,7 +99,7 @@ bool RaceChronoBleAgent::waitForConnection(uint32_t timeoutMs) {
   return true;
 }
 
-bool RaceChronoBleAgent::isConnected() {
+bool RaceChronoBleAgent::isConnected() const {
   return Bluefruit.connected();
 }
 
