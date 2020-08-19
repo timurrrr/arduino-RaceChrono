@@ -1,5 +1,56 @@
 #include <RaceChrono.h>
 
+// Use RaceChronoPidMap to keep track of the requested PIDs and update intervals.
+// You can use any POD type in as an "extra" in this map.
+// Keep it small for better performance though.
+using NoExtra = struct {};
+RaceChronoPidMap<NoExtra> pidMap;
+
+void dumpMapToSerial() {
+  Serial.println("Current state of the PID map:");
+
+  uint16_t updateIntervalForAllEntries;
+  bool areAllPidsAllowed =
+      pidMap.areAllPidsAllowed(&updateIntervalForAllEntries);
+  if (areAllPidsAllowed) {
+    Serial.print("  All PIDs are allowed, update interval: ");
+    Serial.print(updateIntervalForAllEntries);
+    Serial.println(" ms");
+    Serial.println("");
+  }
+
+  const void* entry = pidMap.getFirstEntryId();
+  if (entry == nullptr) {
+    if (areAllPidsAllowed) {
+      // This condition doesn't happen in this example, but will happen if you
+      // query the map for incoming data in the "allow all" mode.
+      Serial.println("  Map is empty.");
+      Serial.println("");
+    } else {
+      Serial.println("  No PIDs are allowed.");
+      Serial.println("");
+    }
+    return;
+  }
+
+  while (entry != nullptr) {
+    uint32_t pid = pidMap.getPid(entry);
+    uint16_t updateIntervalMs = pidMap.getUpdateIntervalMs(entry);
+
+    Serial.print("  ");
+    Serial.print(pid);
+    Serial.print(" (0x");
+    Serial.print(pid, HEX);
+    Serial.print("), update interval: ");
+    Serial.print(updateIntervalMs);
+    Serial.println(" ms.");
+
+    entry = pidMap.getNextEntryId(entry);
+  }
+
+  Serial.println("");
+}
+
 class UpdateMapOnRaceChronoCommands : public RaceChronoBleCanHandler {
 public:
   void allowAllPids(uint16_t updateIntervalMs) {
@@ -43,57 +94,6 @@ public:
 
     dumpMapToSerial();
   }
-
-private:
-  void dumpMapToSerial() {
-    Serial.println("Current state of the PID map:");
-
-    uint16_t updateIntervalForAllEntries;
-    bool areAllPidsAllowed =
-        pidMap.areAllPidsAllowed(&updateIntervalForAllEntries);
-    if (areAllPidsAllowed) {
-      Serial.print("  All PIDs are allowed, update interval: ");
-      Serial.print(updateIntervalForAllEntries);
-      Serial.println(" ms");
-      Serial.println("");
-    }
-
-    const void* entry = pidMap.getFirstEntryId();
-    if (entry == nullptr) {
-      if (areAllPidsAllowed) {
-        // This condition doesn't happen in this example, but will happen if you
-        // query the map for incoming data in the "allow all" mode.
-        Serial.println("  Map is empty.");
-        Serial.println("");
-      } else {
-        Serial.println("  No PIDs are allowed.");
-        Serial.println("");
-      }
-      return;
-    }
-
-    while (entry != nullptr) {
-      uint32_t pid = pidMap.getPid(entry);
-      uint16_t updateIntervalMs = pidMap.getUpdateIntervalMs(entry);
-
-      Serial.print("  ");
-      Serial.print(pid);
-      Serial.print(" (0x");
-      Serial.print(pid, HEX);
-      Serial.print("), update interval: ");
-      Serial.print(updateIntervalMs);
-      Serial.println(" ms.");
-
-      entry = pidMap.getNextEntryId(entry);
-    }
-
-    Serial.println("");
-  }
-
-  // You can use any POD type in as an "extra" in this map.
-  // Keep it small for better performance though.
-  using NoExtra = struct {};
-  RaceChronoPidMap<NoExtra> pidMap;
 } raceChronoHandler;
 
 // Forward declaration to help put code in a natural reading order.
