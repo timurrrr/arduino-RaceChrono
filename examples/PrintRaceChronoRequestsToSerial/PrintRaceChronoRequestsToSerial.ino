@@ -5,11 +5,11 @@ public:
   void allowAllPids(uint16_t updateIntervalMs) {
     Serial.print("ALLOW ALL PIDS, update interval: ");
     Serial.print(updateIntervalMs);
-    Serial.println(" ms");
+    Serial.println(" ms.");
   }
 
   void denyAllPids() {
-    Serial.println("DENY ALL PIDS");
+    Serial.println("DENY ALL PIDS.");
   }
 
   void allowPid(uint32_t pid, uint16_t updateIntervalMs) {
@@ -19,7 +19,7 @@ public:
     Serial.print(pid, HEX);
     Serial.print("), update interval: ");
     Serial.print(updateIntervalMs);
-    Serial.println(" ms");
+    Serial.println(" ms.");
   }
 } raceChronoHandler;
 
@@ -57,7 +57,7 @@ void waitForConnection() {
     Serial.println();
   }
 
-  Serial.println("Connected");
+  Serial.println("Connected.");
 }
 
 void loop() {

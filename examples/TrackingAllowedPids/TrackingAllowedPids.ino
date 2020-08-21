@@ -16,7 +16,7 @@ void dumpMapToSerial() {
   if (areAllPidsAllowed) {
     Serial.print("  All PIDs are allowed, update interval: ");
     Serial.print(updateIntervalForAllEntries);
-    Serial.println(" ms");
+    Serial.println(" ms.");
     Serial.println("");
   }
 
@@ -57,7 +57,7 @@ public:
   void allowAllPids(uint16_t updateIntervalMs) {
     Serial.print("Command: ALLOW ALL PIDS, update interval: ");
     Serial.print(updateIntervalMs);
-    Serial.println(" ms");
+    Serial.println(" ms.");
 
     pidMap.allowAllPids(updateIntervalMs);
 

@@ -41,7 +41,7 @@ void waitForConnection() {
     Serial.println();
   }
 
-  Serial.println("Connected");
+  Serial.println("Connected.");
 }
 
 void loop() {
