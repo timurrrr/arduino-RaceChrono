@@ -54,7 +54,7 @@ public:
   //
   // A functor can be something like this:
   //   struct {
-  //     void operator() (const void *entry) {
+  //     void operator() (void *entry) {
   //       uint32_t pid = pidMap.getPid(entry);
   //       uint16_t updateIntervalMs = pidMap.getUpdateIntervalMs(entry);
   //       MyExtra extra = pidMap.getExtra(entry);
@@ -65,7 +65,7 @@ public:
   //   pidMap.forEach(myFunctor);
   template<typename FuncType>
   void forEach(FuncType functor) {
-    const void* entry = getFirstEntryId();
+    void* entry = getFirstEntryId();
 
     while (entry != nullptr) {
       functor(entry);
@@ -86,9 +86,10 @@ public:
   // Allows accessing the "extra" assosciated with the given entry.
   // This can be useful to track stuff such as when was the last message sent
   // for the PID assosciated with this entry.
-  ExtraType* const getExtra(void *entry) {
+  // TODO: add a const/const override.
+  ExtraType* getExtra(void *entry) {
     Entry *realEntry = (Entry*)entry;
-    return realEntry->extra;
+    return &realEntry->extra;
   }
 
   // Returns an opaque pointer for an entry for the given PID, or nullptr.
@@ -99,7 +100,7 @@ public:
   // last reset().
   // Don't store the pointer anywhere, as it will be invalidated if reset() or
   // allowOnePid() is called.
-  const void* getEntryId(uint32_t pid) {
+  void* getEntryId(uint32_t pid) {
     uint16_t defaultUpdateIntervalMs =
         updateIntervalForAllEntries != NOT_ALL_PIDS_ALLOWED
             ? updateIntervalForAllEntries
@@ -109,7 +110,7 @@ public:
 
   // Get the entry for the lowest PID registered in the map.
   // Can be useful e.g. for printing the state of the map.
-  const void* getFirstEntryId() const {
+  void* getFirstEntryId() {
     if (numEntries == 0) {
       return nullptr;
     }
@@ -118,7 +119,8 @@ public:
 
   // Returns the entry in the map after "entry", in the ascending PID order,
   // or nullptr if there are no more entries.
-  const void* getNextEntryId(const void *entry) const {
+  // TODO: add a const/const override.
+  void* getNextEntryId(void *entry) const {
     Entry *realEntry = (Entry*)entry;
     uint16_t index = realEntry - &_map[0];
     if (index < 0 || index + 1 >= numEntries) {
@@ -156,7 +158,7 @@ private:
       return insertionPosition;
     }
 
-    if (defaultUpdateIntervalMs == 0) {
+    if (defaultUpdateIntervalMs == DONT_CREATE_NEW_ENTRY) {
       return nullptr;
     }
 
