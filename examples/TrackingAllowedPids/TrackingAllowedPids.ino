@@ -1,8 +1,9 @@
 #include <RaceChrono.h>
 
-// Use RaceChronoPidMap to keep track of the requested PIDs and update intervals.
-// You can use any POD type in as an "extra" in this map.
-// Keep it small for better performance though.
+// In this example, we use RaceChronoPidMap to keep track of the requested PIDs
+// and update intervals. You can use any POD type in as an "extra" in this map,
+// but in this example we don't actually need any extras.
+// If you do use an extra, keep it small for better performance.
 using NoExtra = struct {};
 RaceChronoPidMap<NoExtra> pidMap;
 
@@ -19,8 +20,7 @@ void dumpMapToSerial() {
     Serial.println("");
   }
 
-  const void* entry = pidMap.getFirstEntryId();
-  if (entry == nullptr) {
+  if (pidMap.isEmpty()) {
     if (areAllPidsAllowed) {
       // This condition doesn't happen in this example, but will happen if you
       // query the map for incoming data in the "allow all" mode.
@@ -33,20 +33,21 @@ void dumpMapToSerial() {
     return;
   }
 
-  while (entry != nullptr) {
-    uint32_t pid = pidMap.getPid(entry);
-    uint16_t updateIntervalMs = pidMap.getUpdateIntervalMs(entry);
+  struct {
+    void operator() (const void *entry) {
+      uint32_t pid = pidMap.getPid(entry);
+      uint16_t updateIntervalMs = pidMap.getUpdateIntervalMs(entry);
 
-    Serial.print("  ");
-    Serial.print(pid);
-    Serial.print(" (0x");
-    Serial.print(pid, HEX);
-    Serial.print("), update interval: ");
-    Serial.print(updateIntervalMs);
-    Serial.println(" ms.");
-
-    entry = pidMap.getNextEntryId(entry);
-  }
+      Serial.print("  ");
+      Serial.print(pid);
+      Serial.print(" (0x");
+      Serial.print(pid, HEX);
+      Serial.print("), update interval: ");
+      Serial.print(updateIntervalMs);
+      Serial.println(" ms.");
+    }
+  } dumpEntry;
+  pidMap.forEach(dumpEntry);
 
   Serial.println("");
 }

@@ -46,20 +46,31 @@ public:
     return true;
   }
 
-  // Returns an opaque pointer for an entry for the given PID, or nullptr.
-  // This is useful to avoid performing multiple lookups if you need to query
-  // multiple things, such as the update interval, or the extra.
+  bool isEmpty() const {
+    return numEntries == 0;
+  }
+
+  // Iterate over the registered PIDs and call the functor on all the entries.
   //
-  // A new entry is created in the map if allowAllPids() was called since the
-  // last reset().
-  // Don't store the pointer anywhere, as it will be invalidated if reset() or
-  // allowOnePid() is called.
-  const void* getEntryId(uint32_t pid) {
-    uint16_t defaultUpdateIntervalMs =
-        updateIntervalForAllEntries != NOT_ALL_PIDS_ALLOWED
-            ? updateIntervalForAllEntries
-            : DONT_CREATE_NEW_ENTRY;
-    return findEntry(pid, defaultUpdateIntervalMs);
+  // A functor can be something like this:
+  //   struct {
+  //     void operator() (const void *entry) {
+  //       uint32_t pid = pidMap.getPid(entry);
+  //       uint16_t updateIntervalMs = pidMap.getUpdateIntervalMs(entry);
+  //       MyExtra extra = pidMap.getExtra(entry);
+  //       ...
+  //     }
+  //   } myFunctor;
+  //   ...
+  //   pidMap.forEach(myFunctor);
+  template<typename FuncType>
+  void forEach(FuncType functor) {
+    const void* entry = getFirstEntryId();
+
+    while (entry != nullptr) {
+      functor(entry);
+      entry = getNextEntryId(entry);
+    }
   }
 
   uint32_t getPid(const void *entry) const {
@@ -78,6 +89,22 @@ public:
   ExtraType* const getExtra(void *entry) {
     Entry *realEntry = (Entry*)entry;
     return realEntry->extra;
+  }
+
+  // Returns an opaque pointer for an entry for the given PID, or nullptr.
+  // This is useful to avoid performing multiple lookups if you need to query
+  // multiple things, such as the update interval, or the extra.
+  //
+  // A new entry is created in the map if allowAllPids() was called since the
+  // last reset().
+  // Don't store the pointer anywhere, as it will be invalidated if reset() or
+  // allowOnePid() is called.
+  const void* getEntryId(uint32_t pid) {
+    uint16_t defaultUpdateIntervalMs =
+        updateIntervalForAllEntries != NOT_ALL_PIDS_ALLOWED
+            ? updateIntervalForAllEntries
+            : DONT_CREATE_NEW_ENTRY;
+    return findEntry(pid, defaultUpdateIntervalMs);
   }
 
   // Get the entry for the lowest PID registered in the map.
