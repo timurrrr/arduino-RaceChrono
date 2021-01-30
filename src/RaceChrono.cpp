@@ -82,9 +82,15 @@ void RaceChronoBleAgent::startAdvertising() {
   Bluefruit.Advertising.addService(_service);
   Bluefruit.Advertising.addName();
   Bluefruit.Advertising.restartOnDisconnect(true);
+
+  // Fast mode interval: 20 ms, slow mode interval: 152.5 ms.
   Bluefruit.Advertising.setInterval(/* fast= */ 32, /* slow= */ 244); // x0.625 ms
-  Bluefruit.Advertising.setFastTimeout(30); // in seconds
-  Bluefruit.Advertising.start(/* timeout= */ 0);  // 0 = Don't stop advertising
+
+  // Timeout for fast mode is 30 seconds.
+  Bluefruit.Advertising.setFastTimeout(30);
+
+  // Start advertising forever.
+  Bluefruit.Advertising.start(/* timeout= */ 0);
 }
 
 bool RaceChronoBleAgent::waitForConnection(uint32_t timeoutMs) {
