@@ -64,13 +64,10 @@ void RaceChronoBleAgent::setUp(
   _pidRequestsCharacteristic.setProperties(CHR_PROPS_WRITE);
   _pidRequestsCharacteristic.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
   _pidRequestsCharacteristic.setWriteCallback(handle_racechrono_filter_request);
-  // TODO: use setWriteAuthorizeCallback() to limit read access to only the last authorized device.
   _pidRequestsCharacteristic.begin();
 
   _canBusDataCharacteristic.setProperties(CHR_PROPS_NOTIFY | CHR_PROPS_READ);
   _canBusDataCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  // TODO: use setReadAuthorizeCallback() to limit read access to only the last
-  // authorized device?
   _canBusDataCharacteristic.begin();
 
   Bluefruit.setTxPower(+4);
