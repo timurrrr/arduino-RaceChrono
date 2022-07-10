@@ -1,7 +1,12 @@
 #ifndef __RACECHRONO_H
 #define __RACECHRONO_H
+#include <Arduino.h>
 
-#include <bluefruit.h>
+#if defined(ARDUINO_ARCH_NRF52)
+  #include <bluefruit.h>
+#elif defined(ARDUINO_ARCH_ESP32)
+  #include <NimBLEDevice.h>
+#endif
 
 #include "RaceChronoPidMap.h"
 
@@ -36,14 +41,22 @@ private:
 
   // BLEService docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/bleservice
   // BLECharacteristic docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/blecharacteristic
-
+  #if defined(ARDUINO_ARCH_NRF52)
   BLEService _service;
 
   // RaceChrono uses two BLE characteristics:
   // 1) 0x02 to request which PIDs to send, and how frequently
   // 2) 0x01 to be notified of data received for those PIDs
+  
   BLECharacteristic _pidRequestsCharacteristic;
   BLECharacteristic _canBusDataCharacteristic;
+  #elif defined(ARDUINO_ARCH_ESP32)
+  BLEServer* pServer;
+  BLEService* pMainService;
+  std::string BTName;
+  NimBLECharacteristic* _pidRequestsCharacteristic;
+  NimBLECharacteristic* _canBusDataCharacteristic;
+  #endif
 };
 
 extern RaceChronoBleAgent RaceChronoBle;
