@@ -1,6 +1,8 @@
+#if defined(ARDUINO_ARCH_NRF52)
+
+#include <bluefruit.h>
 #include "RaceChrono.h"
 
-#if defined(ARDUINO_ARCH_NRF52)
 namespace {
 
 RaceChronoBleCanHandler *handler = nullptr;

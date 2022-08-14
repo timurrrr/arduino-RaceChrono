@@ -1,8 +1,6 @@
 #ifndef __RACECHRONO_H
 #define __RACECHRONO_H
 
-#include <bluefruit.h>
-
 #include "RaceChronoPidMap.h"
 
 class RaceChronoBleCanHandler {
