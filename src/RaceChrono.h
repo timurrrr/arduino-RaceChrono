@@ -16,36 +16,23 @@ public:
 
 class RaceChronoBleAgent {
 public:
-  RaceChronoBleAgent();
-
   // Seems like the length limit for 'bluetoothName' is 19 visible characters.
-  void setUp(const char *bluetoothName, RaceChronoBleCanHandler *handler);
+  virtual void setUp(
+      const char *bluetoothName, RaceChronoBleCanHandler *handler) = 0;
 
-  void startAdvertising();
+  virtual void startAdvertising() = 0;
 
   // Returns true on success, false on failure.
-  bool waitForConnection(uint32_t timeoutMs);
+  virtual bool waitForConnection(uint32_t timeoutMs) = 0;
 
-  bool isConnected() const;
+  virtual bool isConnected() const = 0;
 
-  void sendCanData(uint32_t pid, const uint8_t *data, uint8_t len);
-
-private:
-  // The protocol implemented in this file is based on
-  // https://github.com/aollin/racechrono-ble-diy-device
-
-  // BLEService docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/bleservice
-  // BLECharacteristic docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/blecharacteristic
-
-  BLEService _service;
-
-  // RaceChrono uses two BLE characteristics:
-  // 1) 0x02 to request which PIDs to send, and how frequently
-  // 2) 0x01 to be notified of data received for those PIDs
-  BLECharacteristic _pidRequestsCharacteristic;
-  BLECharacteristic _canBusDataCharacteristic;
+  virtual void sendCanData(uint32_t pid, const uint8_t *data, uint8_t len) = 0;
 };
 
-extern RaceChronoBleAgent RaceChronoBle;
+#if defined(ARDUINO_ARCH_NRF52)
+#endif  // ARDUINO_ARCH_NRF52
+
+extern RaceChronoBleAgent &RaceChronoBle;
 
 #endif  // __RACECHRONO_H

@@ -1,9 +1,12 @@
 #include "RaceChrono.h"
 
+#if defined(ARDUINO_ARCH_NRF52)
 namespace {
 
 RaceChronoBleCanHandler *handler = nullptr;
 
+// The protocol implemented in this file is based on
+// https://github.com/aollin/racechrono-ble-diy-device
 void handle_racechrono_filter_request(
     uint16_t conn_hdl, BLECharacteristic *chr, uint8_t *data, uint16_t len) {
   if (len < 1) {
@@ -40,18 +43,46 @@ void handle_racechrono_filter_request(
   // TODO: figure out how to report errors.
 }
 
-}  // namespace
 
-RaceChronoBleAgent RaceChronoBle;
+class RaceChronoBleAgentNRF52 : public RaceChronoBleAgent {
+public:
+  RaceChronoBleAgentNRF52();
 
-RaceChronoBleAgent::RaceChronoBleAgent() :
+  // Seems like the length limit for 'bluetoothName' is 19 visible characters.
+  void setUp(const char *bluetoothName, RaceChronoBleCanHandler *handler);
+
+  void startAdvertising();
+
+  // Returns true on success, false on failure.
+  bool waitForConnection(uint32_t timeoutMs);
+
+  bool isConnected() const;
+
+  void sendCanData(uint32_t pid, const uint8_t *data, uint8_t len);
+
+private:
+  // BLEService docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/bleservice
+  // BLECharacteristic docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/blecharacteristic
+
+  BLEService _service;
+
+  // RaceChrono uses two BLE characteristics:
+  // 1) 0x02 to request which PIDs to send, and how frequently
+  // 2) 0x01 to be notified of data received for those PIDs
+  BLECharacteristic _pidRequestsCharacteristic;
+  BLECharacteristic _canBusDataCharacteristic;
+};
+
+RaceChronoBleAgentNRF52 RaceChronoNRF52Instance;
+
+RaceChronoBleAgentNRF52::RaceChronoBleAgentNRF52() :
   _service(/* uuid= */ 0x00000001000000fd8933990d6f411ff8),
   _pidRequestsCharacteristic(0x02),
   _canBusDataCharacteristic(0x01)
 {
 }
 
-void RaceChronoBleAgent::setUp(
+void RaceChronoBleAgentNRF52::setUp(
     const char *bluetoothName, RaceChronoBleCanHandler *handler) {
   ::handler = handler;
 
@@ -73,7 +104,7 @@ void RaceChronoBleAgent::setUp(
   Bluefruit.setTxPower(+4);
 }
 
-void RaceChronoBleAgent::startAdvertising() {
+void RaceChronoBleAgentNRF52::startAdvertising() {
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addService(_service);
@@ -90,7 +121,7 @@ void RaceChronoBleAgent::startAdvertising() {
   Bluefruit.Advertising.start(/* timeout= */ 0);
 }
 
-bool RaceChronoBleAgent::waitForConnection(uint32_t timeoutMs) {
+bool RaceChronoBleAgentNRF52::waitForConnection(uint32_t timeoutMs) {
   uint32_t startTimeMs = millis();
   while (!Bluefruit.connected()) {
     if (millis() - startTimeMs >= timeoutMs) {
@@ -102,11 +133,11 @@ bool RaceChronoBleAgent::waitForConnection(uint32_t timeoutMs) {
   return true;
 }
 
-bool RaceChronoBleAgent::isConnected() const {
+bool RaceChronoBleAgentNRF52::isConnected() const {
   return Bluefruit.connected();
 }
 
-void RaceChronoBleAgent::sendCanData(
+void RaceChronoBleAgentNRF52::sendCanData(
     uint32_t pid, const uint8_t *data, uint8_t len) {
   if (len > 8) {
     len = 8;
@@ -120,3 +151,9 @@ void RaceChronoBleAgent::sendCanData(
   memcpy(buffer + 4, data, len);
   _canBusDataCharacteristic.notify(buffer, 4 + len);
 }
+
+}  // namespace
+
+RaceChronoBleAgent &RaceChronoBle = RaceChronoNRF52Instance;
+
+#endif  // ARDUINO_ARCH_NRF52
