@@ -34,13 +34,9 @@ public:
 
 private:
   // BLEService docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/bleservice
-  // BLECharacteristic docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/blecharacteristic
-
   BLEService _service;
 
-  // RaceChrono uses two BLE characteristics:
-  // 1) 0x02 to request which PIDs to send, and how frequently
-  // 2) 0x01 to be notified of data received for those PIDs
+  // BLECharacteristic docs: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/blecharacteristic
   BLECharacteristic _pidRequestsCharacteristic;
   BLECharacteristic _canBusDataCharacteristic;
 };

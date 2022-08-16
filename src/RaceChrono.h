@@ -31,6 +31,10 @@ public:
 
 protected:
   static const uint16_t RACECHRONO_SERVICE_UUID = 0x1ff8;
+
+  // RaceChrono uses two BLE characteristics:
+  // 1) 0x02 to request which PIDs to send, and how frequently
+  // 2) 0x01 to be notified of data received for those PIDs
   static const uint16_t PID_CHARACTERISTIC_UUID = 0x2;
   static const uint16_t CAN_BUS_CHARACTERISTIC_UUID = 0x1;
 };
