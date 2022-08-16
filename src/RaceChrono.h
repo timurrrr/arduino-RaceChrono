@@ -10,6 +10,8 @@ public:
   virtual void allowAllPids(uint16_t updateIntervalMs);
   virtual void denyAllPids();
   virtual void allowPid(uint32_t pid, uint16_t updateIntervalMs);
+
+  void handlePidRequest(const uint8_t *data, uint16_t len);
 };
 
 class RaceChronoBleAgent {
@@ -21,11 +23,16 @@ public:
   virtual void startAdvertising() = 0;
 
   // Returns true on success, false on failure.
-  virtual bool waitForConnection(uint32_t timeoutMs) = 0;
+  bool waitForConnection(uint32_t timeoutMs);
 
   virtual bool isConnected() const = 0;
 
   virtual void sendCanData(uint32_t pid, const uint8_t *data, uint8_t len) = 0;
+
+protected:
+  static const uint16_t RACECHRONO_SERVICE_UUID = 0x1ff8;
+  static const uint16_t PID_CHARACTERISTIC_UUID = 0x2;
+  static const uint16_t CAN_BUS_CHARACTERISTIC_UUID = 0x1;
 };
 
 #if defined(ARDUINO_ARCH_NRF52)

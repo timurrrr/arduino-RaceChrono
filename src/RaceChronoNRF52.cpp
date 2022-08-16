@@ -5,44 +5,14 @@
 
 namespace {
 
+// TODO: Instead of using a global variable, figure out how to pass a callback
+// to setWriteCallback() in a way that we can reference a field of
+// RaceChronoBleAgentNRF52.
 RaceChronoBleCanHandler *handler = nullptr;
 
-// The protocol implemented in this file is based on
-// https://github.com/aollin/racechrono-ble-diy-device
 void handle_racechrono_filter_request(
     uint16_t conn_hdl, BLECharacteristic *chr, uint8_t *data, uint16_t len) {
-  if (len < 1) {
-    // TODO: figure out how to report errors.
-    return;
-  }
-
-  switch (data[0]) {
-    case 1:  // Allow all CAN PIDs.
-      if (len == 3) {
-        uint16_t updateIntervalMs = data[1] << 8 | data[2];
-        handler->allowAllPids(updateIntervalMs);
-        return;
-      }
-      break;
-
-    case 0:  // Deny all CAN PIDs.
-      if (len == 1) {
-        handler->denyAllPids();
-        return;
-      }
-      break;
-
-    case 2:  // Allow one more CAN PID.
-      if (len == 7) {
-        uint16_t updateIntervalMs = data[1] << 8 | data[2];
-        uint32_t pid = data[3] << 24 | data[4] << 16 | data[5] << 8 | data[6];
-        handler->allowPid(pid, updateIntervalMs);
-        return;
-      }
-      break;
-  }
-
-  // TODO: figure out how to report errors.
+  handler->handlePidRequest(data, len);
 }
 
 
@@ -78,9 +48,9 @@ private:
 RaceChronoBleAgentNRF52 RaceChronoNRF52Instance;
 
 RaceChronoBleAgentNRF52::RaceChronoBleAgentNRF52() :
-  _service(/* uuid= */ 0x00000001000000fd8933990d6f411ff8),
-  _pidRequestsCharacteristic(0x02),
-  _canBusDataCharacteristic(0x01)
+  _service(RACECHRONO_SERVICE_UUID),
+  _pidRequestsCharacteristic(PID_CHARACTERISTIC_UUID),
+  _canBusDataCharacteristic(CAN_BUS_CHARACTERISTIC_UUID)
 {
 }
 
@@ -114,25 +84,14 @@ void RaceChronoBleAgentNRF52::startAdvertising() {
   Bluefruit.Advertising.restartOnDisconnect(true);
 
   // Fast mode interval: 20 ms, slow mode interval: 152.5 ms.
-  Bluefruit.Advertising.setInterval(/* fast= */ 32, /* slow= */ 244); // x0.625 ms
+  // The numbers specified on the call are multiplied by (0.625 ms) units.
+  Bluefruit.Advertising.setInterval(/* fast= */ 32, /* slow= */ 244);
 
   // Timeout for fast mode is 30 seconds.
   Bluefruit.Advertising.setFastTimeout(30);
 
   // Start advertising forever.
   Bluefruit.Advertising.start(/* timeout= */ 0);
-}
-
-bool RaceChronoBleAgentNRF52::waitForConnection(uint32_t timeoutMs) {
-  uint32_t startTimeMs = millis();
-  while (!Bluefruit.connected()) {
-    if (millis() - startTimeMs >= timeoutMs) {
-      return false;
-    }
-    delay(100);
-  }
-
-  return true;
 }
 
 bool RaceChronoBleAgentNRF52::isConnected() const {
