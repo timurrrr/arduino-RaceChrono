@@ -20,7 +20,6 @@ class RaceChronoBleAgentNRF52 : public RaceChronoBleAgent {
 public:
   RaceChronoBleAgentNRF52();
 
-  // Seems like the length limit for 'bluetoothName' is 19 visible characters.
   void setUp(const char *bluetoothName, RaceChronoBleCanHandler *handler);
 
   void startAdvertising();

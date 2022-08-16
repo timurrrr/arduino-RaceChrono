@@ -5,6 +5,7 @@ Library for Arduino for communicating with the RaceChrono app.
 
 * Adafruit Feather nRF52832
 * Adafruit ItsyBitsy nRF52840 Express
+* ESP32 (work in progress!)
 
 ## Installation
 
@@ -17,9 +18,8 @@ git clone https://github.com/timurrrr/arduino-RaceChrono.git arduino-RaceChrono
 
 ## API
 
-For now, see the source code, specifically the [RaceChrono.h](src/RaceChrono.h)
-file. The code should have clarifying comments wherever there are any unclear
-bits.
+See the source code, specifically the [RaceChrono.h](src/RaceChrono.h) file.
+The code should have clarifying comments wherever there are any unclear bits.
 
 TODO: write actual documentation
 
